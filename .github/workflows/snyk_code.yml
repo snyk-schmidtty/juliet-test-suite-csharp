@@ -1,4 +1,4 @@
-name: "Snyk Code Scan "
+name: "Snyk Code Scan"
 
 on:
   push:
@@ -22,14 +22,23 @@ jobs:
     - name: Install Snyk & Authenticate
       run: |
          sudo npm install -g snyk
+         sudo npm install -g snyk-to-html
          snyk auth ${SNYK_TOKEN}
     # Run Snyk Code
     - name: Run Snyk Code
       run: |
          snyk code test --sarif  > results.sarif
+         snyk-to-html -i results.sarif -o code_results.html
       continue-on-error: true
     - name: Upload SARIF file
-      uses: github/codeql-action/upload-sarif@v1
+      uses: github/codeql-action/upload-sarif@v2
       with:
         # Path to SARIF file relative to the root of the repository
         sarif_file: results.sarif
+    - name: Archive Snyk Code Coverage Results
+      uses: actions/upload-artifact@v3
+      with:
+          name: Archive Snyk Code Coverage Results
+          path: | 
+            results.sarif
+            code_results.html
